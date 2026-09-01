@@ -1,0 +1,174 @@
+- name: Prepare system
+  hosts: all
+  become: true
+  tasks:
+    - name: Disable and stop firewalld (RHEL/Rocky/CentOS)
+      ansible.builtin.systemd:
+        name: firewalld
+        state: stopped
+        enabled: false
+      when: ansible_facts['os_family'] == 'RedHat'
+
+    - name: Disable and stop UFW (Ubuntu/Debian)
+      ansible.builtin.systemd:
+        name: ufw
+        state: stopped
+        enabled: false
+      when: ansible_facts['os_family'] == 'Debian'
+ 
+    - name: Configure SELinux to be disabled permanently
+      ansible.posix.selinux:
+        state: disabled
+      register: selinux_status
+
+    - name: Reboot the server if SELinux state changed
+      ansible.builtin.reboot:
+        msg: "Rebooting to apply permanently disabled SELinux state"
+        connect_timeout: 5
+        reboot_timeout: 600
+      when: selinux_status.changed        
+
+
+- name: Deploy and update custom CA certificates
+  hosts: all
+  become: true
+  vars:
+    ca_cert_source_path: "certs/rke2.pem"
+    ca_cert_filename: "rke2-reg.crt"
+
+  tasks:
+    - name: Handle Red Hat-based systems (RHEL, CentOS, Rocky, Fedora)
+      block:
+        - name: Copy CA certificate to RHEL trust anchors
+          ansible.builtin.copy:
+            src: "{{ ca_cert_source_path }}"
+            dest: "/etc/pki/ca-trust/source/anchors/{{ ca_cert_filename }}"
+            owner: root
+            group: root
+            mode: '0644'
+          notify: Update CA trust RHEL
+          when: ansible_facts['os_family'] == 'RedHat'
+
+    - name: Handle Debian-based systems (Ubuntu, Debian)
+      block:
+        - name: Copy CA certificate to Debian trust store
+          ansible.builtin.copy:
+            src: "{{ ca_cert_source_path }}"
+            dest: "/usr/local/share/ca-certificates/{{ ca_cert_filename }}"
+            owner: root
+            group: root
+            mode: '0644'
+          notify: Update CA trust Debian
+          when: ansible_facts['os_family'] == 'Debian'
+
+  handlers:
+    - name: Update CA trust RHEL
+      ansible.builtin.command:
+        cmd: update-ca-trust
+      # Alternative if 'extract' isn't explicitly required: cmd: update-ca-trust
+
+    - name: Update CA trust Debian
+      ansible.builtin.command:
+        cmd: update-ca-certificates
+
+
+
+- name: Install any prerequiste tools and libraries
+  hosts: all
+  become: true
+  tasks:
+    - name: Install tools on Ubuntu
+      ansible.builtin.apt:
+        name: tar
+        state: present
+        update_cache: yes
+      when: ansible_facts['os_family'] == 'Debian'
+
+    - name: Install tools on RHEL/CentOS
+      ansible.builtin.dnf:
+        name: tar
+        state: present
+      when: ansible_facts['os_family'] == "RedHat"
+
+
+- name: Load Balancer
+  hosts: apis
+  become: true
+  tasks:
+    - name: Install HAProxy on Ubuntu
+      ansible.builtin.apt:
+        name: haproxy
+        state: present
+        update_cache: yes
+      when: ansible_facts['os_family'] == 'Debian'
+
+    - name: Install HAProxy on RHEL/CentOS
+      ansible.builtin.dnf:
+        name: haproxy
+        state: present
+      when: ansible_facts['os_family'] == "RedHat"
+
+    - name: Enable HAProxy service
+      ansible.builtin.service:
+        name: haproxy
+        enabled: yes
+        state: started
+
+    - name: Ensures /etc/haproxy/certs dir exists
+      ansible.builtin.file: 
+        path: /etc/haproxy/certs
+        state: directory
+
+    - name: Deploy TLS certificate
+      ansible.builtin.copy:
+        src: certs/
+        dest: /etc/haproxy/certs/
+        mode: '0644'
+        owner: root
+        group: root
+
+    - name: Deploy HAProxy configuration
+      ansible.builtin.template:
+        src: templates/haproxy.cfg.j2
+        dest: /etc/haproxy/haproxy.cfg
+        mode: '0644'
+        # Validate configuration syntax before saving/reloading
+        validate: haproxy -c -f %s
+      notify: Restart HAProxy
+
+  handlers:
+    - name: Restart HAProxy
+      ansible.builtin.service:
+        name: haproxy
+        state: reloaded 
+
+
+- name: Deploy RKE2
+  hosts: masters:workers
+  become: yes
+  vars:
+    rke2_version: v1.36.3+rke2r1
+    rke2_download_kubeconf: true
+    rke2_download_kubeconf_path: /root
+    rke2_ha_mode: true
+    rke2_ha_mode_keepalived: false
+    rke2_ha_mode_kubevip: false
+    rke2_api_ip: 192.168.1.14
+    rke2_tls_san: [rke2-lb, 192.168.1.14]
+    rke2_server_node_taints:
+      - 'CriticalAddonsOnly=true:NoExecute'
+    rke2_selinux: false
+    rke2_airgap_copy_sourcepath: local-artifacts
+    rke2_airgap_mode: true
+    rke2_airgap_implementation: copy
+    rke2_cni: calico
+    rke2_artifact:
+      - sha256sum-{{ rke2_architecture }}.txt
+      - rke2.linux-{{ rke2_architecture }}.tar.gz
+      - rke2-images.linux-{{ rke2_architecture }}.tar.zst
+    rke2_airgap_copy_additional_tarballs:
+      - rke2-images-multus.linux-{{ rke2_architecture }}.tar.zst
+      - rke2-images-calico.linux-{{ rke2_architecture }}.tar.zst
+  roles:
+    - role: lablabs.rke2-1.53.1
+
