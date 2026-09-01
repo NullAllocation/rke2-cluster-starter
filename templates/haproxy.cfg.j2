@@ -1,0 +1,96 @@
+global
+        log /dev/log    local0
+        log /dev/log    local1 notice
+        chroot /var/lib/haproxy
+        stats timeout 30s
+        user haproxy
+        group haproxy
+        daemon
+
+        #maxconn 2000000
+        #nbproc 8
+        #cpu-map  1 1
+        #cpu-map  2 2
+        #cpu-map  3 3
+        #cpu-map  4 4
+        #stats bind-process 4
+
+defaults
+        log     global
+        mode    http
+        option  httplog
+        option forwardfor
+        option  dontlognull
+        timeout connect 5000ms
+        timeout client  50000ms
+        timeout server  50000ms
+        retries 4
+        maxconn 2000000
+
+listen stats
+    bind *:9000                                 # Bind stats to port 9000
+    mode http                                   # http usage
+    log global                                  # Enable Logging
+    stats enable                                # enable statistics reports
+    stats hide-version                          # Hide the version of HAProxy
+    stats refresh 30s                           # HAProxy refresh time
+    stats show-node                             # Shows the hostname of the node
+    stats auth testuser:testpasswd              # Authentication for Stats page
+    stats uri /stats                            # Statistics URL
+
+frontend k8s-master-nodes
+    bind *:6443
+    option tcplog
+    mode tcp
+    default_backend k8s-master-nodes
+ 
+backend k8s-master-nodes
+    mode tcp
+    balance roundrobin
+    option tcp-check
+    {% for host in groups['masters'] %}
+    server {{ host }} {{ hostvars[host]['ansible_host'] }}:6443 check fall 3 rise 2
+    {% endfor %}
+ 
+frontend rke2-master-nodes
+    bind *:9345
+    option tcplog
+    mode tcp
+    default_backend rke2-master-nodes
+ 
+backend rke2-master-nodes
+    mode tcp
+    balance roundrobin
+    option tcp-check
+    {% for host in groups['masters'] %}
+    server {{ host }} {{ hostvars[host]['ansible_host'] }}:9345 check fall 3 rise 1
+    {% endfor %}
+
+frontend www-http
+ bind *:80
+ #reqadd X-Forwarded-Proto:\ http
+ default_backend ef_cx-http
+
+backend ef_cx-http
+ mode http
+ option httpchk HEAD /healthz HTTP/1.0
+ {% for host in groups['workers'] %}
+ server {{ host }} {{ hostvars[host]['ansible_host'] }}:80 check weight 1 maxconn 1024
+ {% endfor %}
+
+frontend www-https
+ bind *:443 ssl crt /etc/haproxy/certs/tls.pem
+ #reqadd X-Forwarded-Proto:\ https
+ option forwardfor
+ default_backend ef_cx-https
+
+backend ef_cx-https
+ mode http
+ option httpchk HEAD /healthz HTTP/1.0
+ {% for host in groups['masters'] %}
+ server {{ host }} {{ hostvars[host]['ansible_host'] }}:443 check weight 1 maxconn 1024 ssl verify none
+ {% endfor %}
+ {% for host in groups['workers'] %}
+ server {{ host }} {{ hostvars[host]['ansible_host'] }}:443 check weight 1 maxconn 1024 ssl verify none
+ {% endfor %}
+

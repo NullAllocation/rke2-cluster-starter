@@ -1,0 +1,107 @@
+- name: Set firewall to permissive
+  hosts: all
+  become: true
+  tasks:
+    - name: Disable and stop firewalld (RHEL/Rocky/CentOS)
+      ansible.builtin.systemd:
+        name: firewalld
+        state: stopped
+        enabled: false
+      when: ansible_facts['os_family'] == 'RedHat'
+
+    - name: Disable and stop UFW (Ubuntu/Debian)
+      ansible.builtin.systemd:
+        name: ufw
+        state: stopped
+        enabled: false
+      when: ansible_facts['os_family'] == 'Debian'
+
+- name: Install and Configure HAProxy
+  hosts: apis
+  become: true
+  tasks:
+    - name: Install HAProxy on Ubuntu
+      ansible.builtin.apt:
+        name: haproxy
+        state: present
+        update_cache: yes
+      when: ansible_facts['os_family'] == 'Debian'
+
+    - name: Install HAProxy on RHEL/CentOS
+      ansible.builtin.dnf:
+        name: haproxy
+        state: present
+      when: ansible_facts['os_family'] == "RedHat"
+
+    - name: Add ports to Selinux
+      community.general.seport:
+        ports:
+          - 80
+          - 443
+          - 6443
+          - 9345 
+        proto: tcp
+        setype: http_port_t
+        state: present
+
+    - name: Enable HAProxy service
+      ansible.builtin.service:
+        name: haproxy
+        enabled: yes
+        state: started
+
+    - name: Ensures /etc/haproxy/certs dir exists
+      ansible.builtin.file: 
+        path: /etc/haproxy/certs
+        state: directory
+
+    - name: Deploy TLS certificate
+      ansible.builtin.copy:
+        src: certs/
+        dest: /etc/haproxy/certs/
+        mode: '0644'
+        owner: root
+        group: root
+
+    - name: Deploy HAProxy configuration
+      ansible.builtin.template:
+        src: templates/haproxy.cfg.j2
+        dest: /etc/haproxy/haproxy.cfg
+        mode: '0644'
+        # Validate configuration syntax before saving/reloading
+        validate: haproxy -c -f %s
+      notify: Restart HAProxy
+
+  handlers:
+    - name: Restart HAProxy
+      ansible.builtin.service:
+        name: haproxy
+        state: reloaded 
+
+- name: Deploy RKE2
+  hosts: masters:workers
+  become: yes
+  vars:
+    rke2_version: v1.36.3+rke2r1
+    rke2_ha_mode: true
+    rke2_api_ip : 192.168.1.14
+    rke2_download_kubeconf: true
+    rke2_server_node_taints:
+      - 'CriticalAddonsOnly=true:NoExecute'
+    rke2_selinux: true
+    rke2_airgap_mode: true
+    rke2_airgap_implementation: copy
+    rke2_cni:
+      - multus
+      - calico
+    rke2_artifact:
+      - sha256sum-{{ rke2_architecture }}.txt
+      - rke2.linux-{{ rke2_architecture }}.tar.gz
+      - rke2-images.linux-{{ rke2_architecture }}.tar.zst
+    rke2_airgap_copy_additional_tarballs:
+      - rke2-images-multus.linux-{{ rke2_architecture }}.tar.zst
+      - rke2-images-calico.linux-{{ rke2_architecture }}.tar.zst
+      - rke2-images-canal.linux-{{ rke2_architecture }}.tar.zst
+  roles:
+    - role: lablabs.rke2
+
