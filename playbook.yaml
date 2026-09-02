@@ -1,4 +1,4 @@
-- name: Set firewall to permissive
+- name: Prepare system
   hosts: all
   become: true
   tasks:
@@ -15,8 +15,39 @@
         state: stopped
         enabled: false
       when: ansible_facts['os_family'] == 'Debian'
+ 
+    - name: Configure SELinux to be disabled permanently
+      ansible.posix.selinux:
+        state: disabled
+      register: selinux_status
 
-- name: Install and Configure HAProxy
+    - name: Reboot the server if SELinux state changed
+      ansible.builtin.reboot:
+        msg: "Rebooting to apply permanently disabled SELinux state"
+        connect_timeout: 5
+        reboot_timeout: 600
+      when: selinux_status.changed        
+
+
+- name: Install any prerequiste tools and libraries
+  hosts: all
+  become: true
+  tasks:
+    - name: Install tools on Ubuntu
+      ansible.builtin.apt:
+        name: tar
+        state: present
+        update_cache: yes
+      when: ansible_facts['os_family'] == 'Debian'
+
+    - name: Install tools on RHEL/CentOS
+      ansible.builtin.dnf:
+        name: tar
+        state: present
+      when: ansible_facts['os_family'] == "RedHat"
+
+
+- name: Load Balancer
   hosts: apis
   become: true
   tasks:
@@ -32,17 +63,6 @@
         name: haproxy
         state: present
       when: ansible_facts['os_family'] == "RedHat"
-
-    - name: Add ports to Selinux
-      community.general.seport:
-        ports:
-          - 80
-          - 443
-          - 6443
-          - 9345 
-        proto: tcp
-        setype: http_port_t
-        state: present
 
     - name: Enable HAProxy service
       ansible.builtin.service:
@@ -78,6 +98,7 @@
         name: haproxy
         state: reloaded 
 
+
 - name: Deploy RKE2
   hosts: masters:workers
   become: yes
@@ -88,12 +109,10 @@
     rke2_download_kubeconf: true
     rke2_server_node_taints:
       - 'CriticalAddonsOnly=true:NoExecute'
-    rke2_selinux: true
+    rke2_selinux: false
     rke2_airgap_mode: true
     rke2_airgap_implementation: copy
-    rke2_cni:
-      - multus
-      - calico
+    rke2_cni: canal
     rke2_artifact:
       - sha256sum-{{ rke2_architecture }}.txt
       - rke2.linux-{{ rke2_architecture }}.tar.gz
