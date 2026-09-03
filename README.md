@@ -24,7 +24,7 @@ The next requirement is the cluster. You will need to obtain 7 machines for the 
 
 #### Example Topology:
 
-![RKE2 Cluster](images/RKE2_Cluster.webp)
+![RKE2 Cluster](RKE2_Cluster.webp)
 
 ## Installation
 
