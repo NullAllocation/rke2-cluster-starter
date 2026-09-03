@@ -64,29 +64,21 @@ To set up RKE2 using Ansible playbooks, follow these steps:
 
 4. Prepare the cluster nodes for Ansible:
 
-    Ansible will need to execute commands against the cluster nodes.  We setup certificate-based logins using the host key of the ansible controller host, therefore logins from the ansible controller host are password-less.  when. Some environments present challenges during installation due to internet restrictions.  Setting up a RKE2 cluster involves a lot of downloads and communication with internet servers. A solution for installing in internet restricted environments is to download the artifacts prior to installation and then copy them to the nodes. 
+    Ansible will need to execute commands against the cluster nodes.  We setup certificate-based logins using the host key of the ansible controller host, therefore logins from the ansible controller host are password-less.  In addition, the host file is modified to reference all cluster nodes by names and IP addresses.
 
     ```
     bash setup-nodes.sh -i inventory.ini -p <passwd>
     ```
 
-    This command should produce a 'local_artifacts' folder containing RKE2 artifacts to distribute to the cluster's nodes.  This should help when installing in environments in which external internet access is limited.
+5. Run the playbook:
 
-5. Access the Keycloak web interface:
+    Ansible will need to execute commands against the cluster nodes.
 
-   Open a web browser and navigate to `https://<ENV_KC_HOSTNAME>:8443/admin`<br>
-   ... where <ENV_KC_HOSTNAME> is the value assigned in the .env file.
-
-    You should see the Keycloak login page.  Edge, Brave, and Chromium browsers have been verified to work.
+    ```
+    ansible-playbook playbook.yaml -i inventory.ini
+    ```
 
    Note: The first time you access the web interface, you'll need to accept the self-signed SSL certificate.
-
-6. Log in to the Keycloak web interface:
-
-   Use the default administrator credentials to log in:
-
-   - Username: admin
-   - Password: admin
 
 ## Testing the installation
 
@@ -108,81 +100,3 @@ To verify the Keycloak instance is functional, follow these steps:
     {"access_token":"YUJ5anFzIn0.eyJleHAiOjE3MzE3MDgxMDksImlY29tIn0.nvDP5HJ-oPZRjSlEBxHyY37qzf39wykU3VapULtcA","expires_in":300,"refresh_expires_in":1800,"refresh_token":"<data>","token_type":"Bearer","not-before-policy":0,"session_state":"27aba1a8-eb77-424b-95d5-96010432e3e0","scope":"profile email"}
     ```
 If these two steps were successful, the Keycloak instance is functioning.  Visit the [Securing Apps](https://www.keycloak.org/securing-apps/overview) resource to get detailed instructions on configuring the Keycloak to secure you particular application or service.
-
-
-------------------------------------------------------------------
---------------------------------------------------------------------
-
-
-### RKE2 Cluster Installation With Ansible:
-
-**RKE2 is Rancher's enterprise-ready next-generation Kubernetes distribution.It delivers upstream‑compatible Kubernetes with built‑in security hardening, compliance‑friendly by defaults, and a simple operational model that scales cleanly from data center to edge.**
-
-#### Example Topology:
-
-| Name      | IP Address         |
-|-----------|--------------------|
-| fra-node  | 192.168.122.100    |
-| Master-01 | 192.168.122.101    |
-| Master-02 | 192.168.122.102    |
-| Master-03 | 192.168.122.103    |
-| Worker-01 | 192.168.122.104    |
-| Worker-02 | 192.168.122.105    |
-| Worker-03 | 192.168.122.106    |
-
----
-
-#### Pre-requisits:
-
-- 6 Ubuntu 24.04 LTS on all nodes [ 3 servers and 3 agent nodes]
-- One fixed registration address: 192.168.122.100 in front of the servers.
-
-
-#### Copy ssh keys to master and worker nodes:
-
-```sh
-{
-declare -a NODES=(192.168.122.X 192.168.122.Y 192.168.122.Z 192.168.122.X 192.168.122.Y 192.168.122.Z)
-
-for node in ${NODES[@]}; do
-  ssh-copy-id -i ~/.ssh/id_ed25519 root@$node
-done
-}
-```
-
-apt install -y software-properties-common
-add-apt-repository --yes --update ppa:ansible/ansible
-apt -install -y ansible
-apt install -y ansible
-ansible --version
-ssh-keygen
-
-ansible-galaxy role install lablabs.rke2
-
-
-#### Install RKE2 deployment role:
-
-```sh
-ansible-galaxy install lablabs.rke2
-```
-
-#### Troubelshooting:
-
-**If the playbbok execution hangs at 'Wait for remaining nodes to be ready', check if rke2 is installed on all machines, if not the rke2.sh script may not be running. To fix this, edit the ~/.ansible/roles/lablabs.rke2/tasks/rke2.yml by removing the Check RKE2 version task and replacing it with:**
-
-```sh
-- name: Check rke2 bin exists
-  ansible.builtin.stat:
-    path: "{{ rke2_bin_path }}"
-  register: rke2_exists
-
-- name: Check RKE2 version
-  ansible.builtin.shell: |
-    set -o pipefail
-    {{ rke2_bin_path }} --version | grep -E "rke2 version" | awk '{print $3}'
-  args:
-    executable: /bin/bash
-  changed_when: false
-  register: installed_rke2_version
-  when: rke2_exists.stat.exists
-```
