@@ -24,15 +24,7 @@ The next requirement is the cluster. You will need to obtain 7 machines for the 
 
 #### Example Topology:
 
-| Name      | IP Address         |
-|-----------|--------------------|
-| fra-node  | 192.168.122.100    |
-| Master-01 | 192.168.122.101    |
-| Master-02 | 192.168.122.102    |
-| Master-03 | 192.168.122.103    |
-| Worker-01 | 192.168.122.104    |
-| Worker-02 | 192.168.122.105    |
-| Worker-03 | 192.168.122.106    |
+![RKE2 Cluster](images/RKE2_Cluster.webp)
 
 ## Installation
 
