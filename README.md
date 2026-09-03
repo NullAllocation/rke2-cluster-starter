@@ -42,31 +42,24 @@ To set up RKE2 using Ansible playbooks, follow these steps:
    
     With the IP addresses of the target cluster host in hand, update the inventory file.  Replace the IP addresses in the file with the IP addresses of your host. If needed, you may add more workers to the workers section.  However, in order to ensure high availability and robustness of the cluster, there must be 3 masters nodes.
 
-2. SSL certificates:
+2. Create certificates for use by the RKE2 registration server:
 
-    Keycloak requires SSL certificates.  Existing certificates can be used by editing the 'ENV_KC_CERTFILE' and 'ENV_KC_KEYFILE' variables within the .env file.  However, if self signed certificates are required for testing/development reasons, use the following commands.
+    The RKE2 registration server is the way a user will interact with the cluster.  The external communication requires TLS certificates.  Existing certificates can be used, however if self signed certificates are required for testing/development reasons, use the following commands.
 
     ```
-    cd certs
-    openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -sha256 -days 3650 -nodes -subj "/C=XX/ST=StateName/L=CityName/O=CompanyName/OU=CompanySectionName/CN=CommonNameOrHostname"
-    chmod 644 cert.pem
-    chmod 644 key.pem
+    bash create-certs.sh
     ```
 
-    This command should produce two certificate files.
+    This command should produce two certificate files in the 'certs' folder.
 
-3. Edit the `.env` environment file:
+3. Download RKE2 artifact for "air gapped" installations:
    
-    If a domain name is not available for the keycloak server, then you can use the public ip address of the server for ENV_KC_HOSTNAME.  Ensure that the files referenced by ENV_KC_CERTFILE and ENV_KC_KEYFILE have permissions set such tht it is accessible. 
+    Some environments present challenges during installation due to internet restrictions.  Setting up a RKE2 cluster involves a lot of downloads and communication with internet servers. A solution for installing in internet restricted environments is to download the artifacts prior to installation and then copy them to the nodes. 
 
     ```
-    ENV_DB_PASSWORD=keycloakdbaccess
-    ENV_DB_USER=keycloakdbadmin
-    ENV_DB_NAME=dbkc
-    ENV_KC_HOSTNAME=<domain name or ip address>
-    ENV_KC_CERTFILE=./certs/cert.pem
-    ENV_KC_KEYFILE=./certs/key.pem
+    bash download-artifacts.sh
     ```
+    This command should produce a 'local_artifacts' folder containing RKE2 artifacts to distribute to the cluster's nodes.  This should help when installing in environments in which external internet access is limited
 
 4. Start the Keycloak application:
 
