@@ -40,7 +40,7 @@ To set up RKE2 using Ansible playbooks, follow these steps:
 
 1. Edit the 'inventory.ini' file:
    
-    With the ips of the desired cluster host on hand, and built in accordance to the pre-requistes listed abovethe If a domain name is not available for the keycloak server, then you can use the public ip address of the server for ENV_KC_HOSTNAME.  Ensure that the files referenced by ENV_KC_CERTFILE and ENV_KC_KEYFILE have permissions set such tht it is accessible. 
+    With the IP addresses of the target cluster host in hand, update the inventory file.  Replace the IP addresses in the file with the IP addresses of your host. If needed, you may add more workers to the workers section.  However, in order to ensure high availability and robustness of the cluster, there must be 3 masters nodes.
 
 2. SSL certificates:
 
