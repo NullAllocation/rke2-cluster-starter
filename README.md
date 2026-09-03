@@ -64,31 +64,8 @@ To set up RKE2 using Ansible playbooks, follow these steps:
 
 5. Run the playbook:
 
-    Ansible will need to execute commands against the cluster nodes.
-
     ```
     ansible-playbook playbook.yaml -i inventory.ini
     ```
 
-   Note: The first time you access the web interface, you'll need to accept the self-signed SSL certificate.
-
-## Testing the installation
-
-To verify the Keycloak instance is functional, follow these steps:
-
-1. Now that you are signed in as an administrator, import the test realm included in this repository.
-   - Expand the realm list in the upper left and select the 'Create Realm' button.
-   - In the form, browse to the file 'testing/test.realm' and select the 'Create' button.
-
-   A realm named 'test' should now exist in the realm list.
-
-2. Start a session using the included credential file.
-   - Create a new session and grab a token from the Keycloak instance by entering the following text at the command prompt.
-    ```
-    sh testing/keycloak-login.sh testing/keycloak-cred.json
-    ```
-   - The result should be a json object that is similar to the following json.
-    ```
-    {"access_token":"YUJ5anFzIn0.eyJleHAiOjE3MzE3MDgxMDksImlY29tIn0.nvDP5HJ-oPZRjSlEBxHyY37qzf39wykU3VapULtcA","expires_in":300,"refresh_expires_in":1800,"refresh_token":"<data>","token_type":"Bearer","not-before-policy":0,"session_state":"27aba1a8-eb77-424b-95d5-96010432e3e0","scope":"profile email"}
-    ```
-If these two steps were successful, the Keycloak instance is functioning.  Visit the [Securing Apps](https://www.keycloak.org/securing-apps/overview) resource to get detailed instructions on configuring the Keycloak to secure you particular application or service.
+   The total running time of this playbook varies based on the infrastructure.  
