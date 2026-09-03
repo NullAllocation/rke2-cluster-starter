@@ -59,15 +59,18 @@ To set up RKE2 using Ansible playbooks, follow these steps:
     ```
     bash download-artifacts.sh
     ```
-    This command should produce a 'local_artifacts' folder containing RKE2 artifacts to distribute to the cluster's nodes.  This should help when installing in environments in which external internet access is limited
 
-4. Start the Keycloak application:
+    This command should produce a 'local_artifacts' folder containing RKE2 artifacts to distribute to the cluster's nodes.  This should help when installing in environments in which external internet access is limited.
+
+4. Prepare the cluster nodes for Ansible:
+
+    Ansible will need to execute commands against the cluster nodes.  We setup certificate-based logins using the host key of the ansible controller host, therefore logins from the ansible controller host are password-less.  when. Some environments present challenges during installation due to internet restrictions.  Setting up a RKE2 cluster involves a lot of downloads and communication with internet servers. A solution for installing in internet restricted environments is to download the artifacts prior to installation and then copy them to the nodes. 
 
     ```
-    docker compose up -d
+    bash setup-nodes.sh -i inventory.ini -p <passwd>
     ```
 
-   This command will start the Keycloak application using the `docker-compose.yml` file.  It will take a few minutes to complete the start up as the images are being downloaded.
+    This command should produce a 'local_artifacts' folder containing RKE2 artifacts to distribute to the cluster's nodes.  This should help when installing in environments in which external internet access is limited.
 
 5. Access the Keycloak web interface:
 
