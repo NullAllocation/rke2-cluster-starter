@@ -6,12 +6,12 @@ This guide will walk you through the process of setting up a RKE2 cluster with A
 
 Before you begin, you will need to have a machine to orchestrate this process. That machine will be referred to as the controller in the guide.  Once you have identified that machine, you'll need to have the following tools installed on it:
 
-- Ansible 2.21.3
+- Ansible
 - Kubectl
 - This repository
   
-The next requirement is the cluster. This guide will seven nodes so you will need to obtain 7 machines for the cluster.  The specifications of those machines shall be as follows...
-- 1 machine for RKE2 registration. Will serve as an external load balancer
+The next requirement is the cluster. This guide will use seven nodes so you will need to obtain 7 machines for the cluster.  The specifications of those machines shall be as follows...
+- 1 machine for RKE2 gateway. This machine will load balance access across the multiple nodes.
   - OS: Rocky Linux 9
   - Memory: 2GB minimum
   - Storage: 10GB minimum
@@ -24,7 +24,8 @@ The next requirement is the cluster. This guide will seven nodes so you will nee
   - Memory: 8GB (or what to appropriate for the intended work load)
   - Storage: 100GB (or what to appropriate for the intended work load)
 
-Note: Although this guide uses 7 machines, the minimum is 5 (1 registration, 3 masters and 1 agent). You can adjust the number of agent nodes as needed.  In order to adjust the size your cluster, just edit the `inventory.ini` file to add more resources to the `workers` section.
+**Note:** Although this guide uses 7 machines, the minimum is 5 (1 gateway, 3 masters and 1 agent). You can adjust the number of agent nodes as needed.  In order to adjust the size your cluster, just edit the `inventory.ini` file to increase/decrease resources in the `workers` section.<br>
+**Note:** It is recommended to keep the root password the same across all cluster machines until after the RKE2 installation.  For production environments, choose a strong password for these machines.
 
 #### Example Topology:
 
@@ -32,21 +33,26 @@ Note: Although this guide uses 7 machines, the minimum is 5 (1 registration, 3 m
 
 ## Installation
 
-To set up RKE2 using Ansible playbooks, follow these steps:
+To set up an RKE2 cluster using Ansible playbooks, follow these steps:
 
 1. Edit the 'inventory.ini' file:
    
-    With the IP addresses of the target cluster host in hand, update the inventory file.  Replace the IP addresses in the file with the IP addresses of your host. If needed, you may add more `workers` to the workers section.  However, in order to ensure high availability and robustness of the cluster, there must be 3 masters nodes.
+    With the IP addresses of the target cluster host in hand, update the inventory file.  Replace the IP addresses in the file with the IP addresses of your host. If needed, you may add more host machines to the `workers` section.  However, in order to ensure high availability and robustness of the cluster, there must be at least 3 masters nodes.
 
-2. Create certificates for use by the RKE2 registration server:
+    ```
+    vi inventory.ini
+    ```
 
-    The RKE2 registration server is the way a user will interact with the cluster.  The external communication requires TLS certificates.  Existing certificates can be used, however if self signed certificates are required for testing/development reasons, use the following commands.
+2. Create certificates for use by the hosted applications:
+
+    In addition to handling the API traffic, the RKE2 gateway server will handle interactions with hosted applications.  Secured web traffic will require TLS certificates.  Existing certificates can be used, however if self signed certificates are required for testing/development reasons, use the following commands.
 
     ```
     bash create-certs.sh
     ```
 
-    This command should produce two certificate files in the 'certs' folder.
+    This command should produce two certificate files in the 'certs' folder. If you already have certificates for your applications, replace the generated files with your certificate files... changing the names to match.<br><br>
+**Note:** The certificates can also be changed after the cluster is created by logging into the gateway server and editing the haproxy configuration file.
 
 3. Download RKE2 artifact for "air gapped" installations:
    
@@ -60,12 +66,12 @@ To set up RKE2 using Ansible playbooks, follow these steps:
 
 4. Prepare the cluster nodes for Ansible:
 
-    Ansible will need to execute commands against the cluster nodes.  We setup certificate-based logins using the host key of the controller host, therefore logins from the controller are password-less.  The key that Ansible will use is specified by the `ansible_ssh_private_key_file` property in the `inventory.ini` file.  If the specified key does not exist, it will be created.  The default value of `/root/.ssh/id_ed25519` is standard and works well, so there is usually no need to change it. 
+    Ansible will need to execute commands against the cluster nodes.  We setup certificate-based logins using the host key of the controller host, therefore logins from the controller are password-less.  The key that Ansible will use is specified by the `ansible_ssh_private_key_file` property in the `inventory.ini` file.  If the specified key does not exist, it will be created. 
 
     ```
     bash setup-nodes.sh -i inventory.ini -p <root password of the machines>
     ```
-
+    **Note:** The `ansible_ssh_private_key_file` property's default value of `/root/.ssh/id_ed25519` is standard and works well, so there is usually no need to change it.
 5. Run the playbook:
 
     ```
@@ -107,13 +113,9 @@ To verify the RKE2 cluster is functional, follow these steps:
       curl -s http://nginx.test-app.svc.cluster.local | head -n 5
     ```
 
-3. If nodes are `NotReady`, check kubelet logs and network interfaces.  For DNS issues, verify CoreDNS pods in the `kube-system` namespace. 
+## Interesting readings
 
-    ```
-    # Check kubelet status on a specific node
-    sudo systemctl status rke2-agent
-
-    # Check CoreDNS logs
-    kubectl --kubeconfig ~/rke2.yaml logs -l k8s-app=kube-dns -n kube-system
-    ```
+[RKE2 Cluster setup part 1](https://arikanonline.medium.com/rke2-cluster-setup-part-1-haproxy-installation-on-rhel9-9885c8301a13)<br>
+[RKE2 Cluster setup part 2](https://arikanonline.medium.com/rke2-cluster-setup-part-2-rancher-kubernetes-engine-installation-master-nodes-on-rhel9-fbfcb8dd4e5b)<br>
+[RKE2 Cluster setup part 3](https://arikanonline.medium.com/rke2-cluster-setup-part-3-rancher-kubernetes-engine-installation-worker-nodes-on-rhel9-bed6d4eb2464)<br>
 

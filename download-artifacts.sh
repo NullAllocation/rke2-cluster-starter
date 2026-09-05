@@ -25,6 +25,4 @@ curl -LO https://github.com/rancher/rke2/releases/download/${RKE2_VERSION}/rke2-
 # Verify checksum
 sha256sum -c sha256sum-amd64.txt --ignore-missing
 
-curl -LO https://dl.k8s.io/release/v1.29.2/bin/linux/amd64/kubectl
-
 echo "All artifacts downloaded successfully"

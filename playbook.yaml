@@ -149,11 +149,12 @@
   vars:
     rke2_version: v1.36.3+rke2r1
     rke2_download_kubeconf: true
+    rke2_download_kubeconf_path: /root
     rke2_ha_mode: true
     rke2_ha_mode_keepalived: false
     rke2_ha_mode_kubevip: false
     rke2_api_ip: 192.168.1.14
-    rke2_tls_san: [192.168.1.14, rke2-lb]
+    rke2_tls_san: [rke2-lb, 192.168.1.14]
     rke2_server_node_taints:
       - 'CriticalAddonsOnly=true:NoExecute'
     rke2_selinux: false
