@@ -51,7 +51,8 @@ while read -r name ansible_host; do
 done < $INVENTORY
 
 # Insert the ip of the RKE2 load balancer host (obtained from the inventory) into the playbook file.
-sed -i "s/rke2_api_ip[[:space:]]\+:[[:space:]]\+.*/rke2_api_ip : ${host_map[$RKE2_LB_NAME]}/" playbook.yaml
+sed -i "s/rke2_api_ip:[[:space:]]\+.*/rke2_api_ip: ${host_map[$RKE2_LB_NAME]}/" playbook.yaml
+sed -i "s/rke2_tls_san:[[:space:]]\+.*/rke2_tls_san: [$RKE2_LB_NAME, ${host_map[$RKE2_LB_NAME]}]/" playbook.yaml
 
 # Test whether host key files exist, if not then generate keys for this host to support running Ansible automation playbooks
 if [[ -z "$SSH_KEY" ]]; then

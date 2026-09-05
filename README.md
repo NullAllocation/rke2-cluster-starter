@@ -1,4 +1,4 @@
-# Setting up RKE2 cluster with high availability
+# Setting up a RKE2 cluster with high availability
 
 This guide will walk you through the process of setting up a RKE2 cluster with Ansible, in high availability mode. RKE2 is Rancher's enterprise-ready next-generation Kubernetes distribution.  It delivers upstream‑compatible Kubernetes with built‑in security hardening, compliance‑friendly by defaults, and a simple operational model that scales cleanly from data center to edge.
 
@@ -7,6 +7,7 @@ This guide will walk you through the process of setting up a RKE2 cluster with A
 Before you begin, you will need to have a machine to orchestrate this process. Once you have idenitfied that machine, you'll need to have the following tools installed on the system:
 
 - Ansible 2.21.3
+- Kubectl
   
 The next requirement is the cluster. You will need to obtain 7 machines for the cluster.  Although this guide uses 7, the minimum is 5. You can adjust the number of agent nodes as needed. The specifications of those machines shall be as follows...
 - 1 machine for RKE2 registration. Will serve as an external load balancer
@@ -24,7 +25,7 @@ The next requirement is the cluster. You will need to obtain 7 machines for the 
 
 #### Example Topology:
 
-![RKE2 Cluster](RKE2_Cluster.webp)
+![RKE2 Cluster](images/RKE2_Cluster.webp)
 
 ## Installation
 
@@ -68,4 +69,46 @@ To set up RKE2 using Ansible playbooks, follow these steps:
     ansible-playbook playbook.yaml -i inventory.ini
     ```
 
-   The total running time of this playbook varies based on the infrastructure.  
+   The total running time of this playbook varies based on the infrastructure.
+
+## Testing 
+
+    Check that control plane components and worker nodes are in a `Ready` state. Use the bundled kubectl or export the kubeconfig.
+
+    ```
+    # Check node status
+    kubectl get nodes -o wide
+
+    # Check system pods (coredns, metrics-server, rke2-coredns, etc.)
+    kubectl get pods -A -o wide
+
+    # Check control plane components
+    kubectl get componentstatuses
+    ```
+
+    Deploy a simple Nginx application to test pod scheduling, service exposure, and internal DNS.
+
+    ```
+    # Create a namespace and deploy Nginx
+    kubectl create namespace test-app
+    kubectl create deployment nginx --image=nginx -n test-app
+    kubectl expose deployment nginx --port=80 --type=ClusterIP -n test-app
+
+    # Verify pods are running
+    kubectl get pods -n test-app
+
+    # Test internal connectivity from another pod
+    kubectl run curl-test --image=curlimages/curl:latest --rm -it --restart=Never -n test-app -- \
+      curl -s http://nginx.test-app.svc.cluster.local | head -n 5
+    ```
+
+    If nodes are `NotReady`, check kubelet logs and network interfaces.  For DNS issues, verify CoreDNS pods in the `kube-system` namespace. 
+
+    ```
+    # Check kubelet status on a specific node
+    sudo systemctl status rke2-agent
+
+    # Check CoreDNS logs
+    kubectl logs -l k8s-app=kube-dns -n kube-system
+    ```
+
