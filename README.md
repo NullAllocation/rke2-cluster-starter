@@ -6,12 +6,12 @@ This guide will walk you through the process of setting up a RKE2 cluster with A
 
 Before you begin, you will need to have a machine to orchestrate this process. That machine will be referred to as the controller in the guide.  Once you have identified that machine, you'll need to have the following tools installed on it:
 
-- Ansible 2.21.3
+- Ansible
 - Kubectl
 - This repository
   
-The next requirement is the cluster. This guide will seven nodes so you will need to obtain 7 machines for the cluster.  The specifications of those machines shall be as follows...
-- 1 machine for RKE2 registration. Will serve as an external load balancer
+The next requirement is the cluster. This guide will use seven nodes so you will need to obtain 7 machines for the cluster.  The specifications of those machines shall be as follows...
+- 1 machine for RKE2 gateway. This machine will load balance access across the multiple nodes.
   - OS: Rocky Linux 9
   - Memory: 2GB minimum
   - Storage: 10GB minimum
@@ -24,7 +24,8 @@ The next requirement is the cluster. This guide will seven nodes so you will nee
   - Memory: 8GB (or what to appropriate for the intended work load)
   - Storage: 100GB (or what to appropriate for the intended work load)
 
-Note: Although this guide uses 7 machines, the minimum is 5 (1 registration, 3 masters and 1 agent). You can adjust the number of agent nodes as needed.  In order to adjust the size your cluster, just edit the `inventory.ini` file to add more resources to the `workers` section.
+Note: Although this guide uses 7 machines, the minimum is 5 (1 registration, 3 masters and 1 agent). You can adjust the number of agent nodes as needed.  In order to adjust the size your cluster, just edit the `inventory.ini` file to increase/decrease resources in the `workers` section.
+Note: It is recommended to keep the root password the same across all cluster machines until after the RKE2 installation.  For production environments, choose a strong password for these machines.
 
 #### Example Topology:
 
