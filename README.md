@@ -1,72 +1,71 @@
-### RKE2 Cluster Installation With Ansible:
+# Setting up RKE2 cluster with high availability
 
-**RKE2 is Rancher's enterprise-ready next-generation Kubernetes distribution.It delivers upstream‑compatible Kubernetes with built‑in security hardening, compliance‑friendly by defaults, and a simple operational model that scales cleanly from data center to edge.**
+This guide will walk you through the process of setting up a RKE2 cluster with Ansible, in high availability mode. RKE2 is Rancher's enterprise-ready next-generation Kubernetes distribution.  It delivers upstream‑compatible Kubernetes with built‑in security hardening, compliance‑friendly by defaults, and a simple operational model that scales cleanly from data center to edge.
+
+## Prerequisites
+
+Before you begin, you will need to have a machine to orchestrate this process. Once you have idenitfied that machine, you'll need to have the following tools installed on the system:
+
+- Ansible 2.21.3
+  
+The next requirement is the cluster. You will need to obtain 7 machines for the cluster.  Although this guide uses 7, the minimum is 5. You can adjust the number of agent nodes as needed. The specifications of those machines shall be as follows...
+- 1 machine for RKE2 registration. Will serve as an external load balancer
+  - OS: Rocky Linux 9
+  - Memory: 2GB minimum
+  - Storage: 10GB minimum
+- 3 machines for RKE2 servers
+  - OS: Rocky Linux 9
+  - Memory: 4GB minimum (8GB recommended)
+  - Storage: 30GB minimum
+- 3 machines for agents.  The required resources for the agents will ultimately depend on the planned workload.
+  - OS: Rocky Linux 9
+  - Memory: 8GB (or what to appropiate for the work load)
+  - Storage: 100GB (or what to appropiate for the work load)
 
 #### Example Topology:
 
-| Name      | IP Address         |
-|-----------|--------------------|
-| fra-node  | 192.168.122.100    |
-| Master-01 | 192.168.122.101    |
-| Master-02 | 192.168.122.102    |
-| Master-03 | 192.168.122.103    |
-| Worker-01 | 192.168.122.104    |
-| Worker-02 | 192.168.122.105    |
-| Worker-03 | 192.168.122.106    |
+![RKE2 Cluster](RKE2_Cluster.webp)
 
----
+## Installation
 
-#### Pre-requisits:
+To set up RKE2 using Ansible playbooks, follow these steps:
 
-- 6 Ubuntu 24.04 LTS on all nodes [ 3 servers and 3 agent nodes]
-- One fixed registration address: 192.168.122.100 in front of the servers.
+1. Edit the 'inventory.ini' file:
+   
+    With the IP addresses of the target cluster host in hand, update the inventory file.  Replace the IP addresses in the file with the IP addresses of your host. If needed, you may add more workers to the workers section.  However, in order to ensure high availability and robustness of the cluster, there must be 3 masters nodes.
 
+2. Create certificates for use by the RKE2 registration server:
 
-#### Copy ssh keys to master and worker nodes:
+    The RKE2 registration server is the way a user will interact with the cluster.  The external communication requires TLS certificates.  Existing certificates can be used, however if self signed certificates are required for testing/development reasons, use the following commands.
 
-```sh
-{
-declare -a NODES=(192.168.122.X 192.168.122.Y 192.168.122.Z 192.168.122.X 192.168.122.Y 192.168.122.Z)
+    ```
+    bash create-certs.sh
+    ```
 
-for node in ${NODES[@]}; do
-  ssh-copy-id -i ~/.ssh/id_ed25519 root@$node
-done
-}
-```
+    This command should produce two certificate files in the 'certs' folder.
 
-apt install -y software-properties-common
-add-apt-repository --yes --update ppa:ansible/ansible
-apt -install -y ansible
-apt install -y ansible
-ansible --version
-ssh-keygen
+3. Download RKE2 artifact for "air gapped" installations:
+   
+    Some environments present challenges during installation due to internet restrictions.  Setting up a RKE2 cluster involves a lot of downloads and communication with internet servers. A solution for installing in internet restricted environments is to download the artifacts prior to installation and then copy them to the nodes. 
 
-ansible-galaxy role install lablabs.rke2
+    ```
+    bash download-artifacts.sh
+    ```
 
+    This command should produce a 'local_artifacts' folder containing RKE2 artifacts to distribute to the cluster's nodes.  This should help when installing in environments in which external internet access is limited.
 
-#### Install RKE2 deployment role:
+4. Prepare the cluster nodes for Ansible:
 
-```sh
-ansible-galaxy install lablabs.rke2
-```
+    Ansible will need to execute commands against the cluster nodes.  We setup certificate-based logins using the host key of the ansible controller host, therefore logins from the ansible controller host are password-less.  In addition, the host file is modified to reference all cluster nodes by names and IP addresses.
 
-#### Troubelshooting:
+    ```
+    bash setup-nodes.sh -i inventory.ini -p <passwd>
+    ```
 
-**If the playbbok execution hangs at 'Wait for remaining nodes to be ready', check if rke2 is installed on all machines, if not the rke2.sh script may not be running. To fix this, edit the ~/.ansible/roles/lablabs.rke2/tasks/rke2.yml by removing the Check RKE2 version task and replacing it with:**
+5. Run the playbook:
 
-```sh
-- name: Check rke2 bin exists
-  ansible.builtin.stat:
-    path: "{{ rke2_bin_path }}"
-  register: rke2_exists
+    ```
+    ansible-playbook playbook.yaml -i inventory.ini
+    ```
 
-- name: Check RKE2 version
-  ansible.builtin.shell: |
-    set -o pipefail
-    {{ rke2_bin_path }} --version | grep -E "rke2 version" | awk '{print $3}'
-  args:
-    executable: /bin/bash
-  changed_when: false
-  register: installed_rke2_version
-  when: rke2_exists.stat.exists
-```
+   The total running time of this playbook varies based on the infrastructure.  
