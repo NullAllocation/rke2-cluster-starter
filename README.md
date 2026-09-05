@@ -33,11 +33,15 @@ The next requirement is the cluster. This guide will use seven nodes so you will
 
 ## Installation
 
-To set up RKE2 using Ansible playbooks, follow these steps:
+To set up an RKE2 cluster using Ansible playbooks, follow these steps:
 
 1. Edit the 'inventory.ini' file:
    
-    With the IP addresses of the target cluster host in hand, update the inventory file.  Replace the IP addresses in the file with the IP addresses of your host. If needed, you may add more `workers` to the workers section.  However, in order to ensure high availability and robustness of the cluster, there must be 3 masters nodes.
+    With the IP addresses of the target cluster host in hand, update the inventory file.  Replace the IP addresses in the file with the IP addresses of your host. If needed, you may add more host machines to the `workers` section.  However, in order to ensure high availability and robustness of the cluster, there must be at least 3 masters nodes.
+
+    ```
+    vi inventory.ini
+    ```
 
 2. Create certificates for use by the hosted applications:
 
@@ -118,4 +122,10 @@ To verify the RKE2 cluster is functional, follow these steps:
     # Check CoreDNS logs
     kubectl --kubeconfig ~/rke2.yaml logs -l k8s-app=kube-dns -n kube-system
     ```
+
+## Interesting readings
+
+[RKE2 Cluster setup part 1](https://arikanonline.medium.com/rke2-cluster-setup-part-1-haproxy-installation-on-rhel9-9885c8301a13)
+[RKE2 Cluster setup part 2](https://arikanonline.medium.com/rke2-cluster-setup-part-2-rancher-kubernetes-engine-installation-master-nodes-on-rhel9-fbfcb8dd4e5b)
+[RKE2 Cluster setup part 3](https://arikanonline.medium.com/rke2-cluster-setup-part-3-rancher-kubernetes-engine-installation-worker-nodes-on-rhel9-bed6d4eb2464)
 
