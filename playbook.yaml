@@ -29,6 +29,50 @@
       when: selinux_status.changed        
 
 
+- name: Deploy and update custom CA certificates
+  hosts: all
+  become: true
+  vars:
+    ca_cert_source_path: "certs/rke2.pem"
+    ca_cert_filename: "rke2-reg.crt"
+
+  tasks:
+    - name: Handle Red Hat-based systems (RHEL, CentOS, Rocky, Fedora)
+      block:
+        - name: Copy CA certificate to RHEL trust anchors
+          ansible.builtin.copy:
+            src: "{{ ca_cert_source_path }}"
+            dest: "/etc/pki/ca-trust/source/anchors/{{ ca_cert_filename }}"
+            owner: root
+            group: root
+            mode: '0644'
+          notify: Update CA trust RHEL
+          when: ansible_facts['os_family'] == 'RedHat'
+
+    - name: Handle Debian-based systems (Ubuntu, Debian)
+      block:
+        - name: Copy CA certificate to Debian trust store
+          ansible.builtin.copy:
+            src: "{{ ca_cert_source_path }}"
+            dest: "/usr/local/share/ca-certificates/{{ ca_cert_filename }}"
+            owner: root
+            group: root
+            mode: '0644'
+          notify: Update CA trust Debian
+          when: ansible_facts['os_family'] == 'Debian'
+
+  handlers:
+    - name: Update CA trust RHEL
+      ansible.builtin.command:
+        cmd: update-ca-trust
+      # Alternative if 'extract' isn't explicitly required: cmd: update-ca-trust
+
+    - name: Update CA trust Debian
+      ansible.builtin.command:
+        cmd: update-ca-certificates
+
+
+
 - name: Install any prerequiste tools and libraries
   hosts: all
   become: true
@@ -104,15 +148,20 @@
   become: yes
   vars:
     rke2_version: v1.36.3+rke2r1
-    rke2_ha_mode: true
-    rke2_api_ip : 192.168.1.14
     rke2_download_kubeconf: true
+    rke2_ha_mode: true
+    rke2_ha_mode_keepalived: false
+    rke2_ha_mode_kubevip: false
+    rke2_api_ip : 192.168.1.14
+    rke2_tls_san:
+      - 192.168.1.14
+      - rke2-lb
     rke2_server_node_taints:
       - 'CriticalAddonsOnly=true:NoExecute'
     rke2_selinux: false
     rke2_airgap_mode: true
     rke2_airgap_implementation: copy
-    rke2_cni: canal
+    rke2_cni: calico
     rke2_artifact:
       - sha256sum-{{ rke2_architecture }}.txt
       - rke2.linux-{{ rke2_architecture }}.tar.gz
@@ -122,5 +171,5 @@
       - rke2-images-calico.linux-{{ rke2_architecture }}.tar.zst
       - rke2-images-canal.linux-{{ rke2_architecture }}.tar.zst
   roles:
-    - role: lablabs.rke2
+    - role: lablabs.rke2-1.53.1
 

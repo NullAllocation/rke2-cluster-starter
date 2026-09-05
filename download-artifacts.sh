@@ -21,7 +21,7 @@ curl -LO https://github.com/rancher/rke2/releases/download/${RKE2_VERSION}/sha25
 curl -LO https://github.com/rancher/rke2/releases/download/${RKE2_VERSION}/rke2-images.linux-amd64.tar.zst
 curl -LO https://github.com/rancher/rke2/releases/download/${RKE2_VERSION}/rke2-images-calico.linux-amd64.tar.zst
 curl -LO https://github.com/rancher/rke2/releases/download/${RKE2_VERSION}/rke2-images-multus.linux-amd64.tar.zst
-curl -LO https://github.com/rancher/rke2/releases/download/${RKE2_VERSION}/rke2-images-canal.linux-amd64.tar.zst
+curl -LO https://github.com/rancher/rke2/releases/download/${RKE2_VERSION}/rke2-images-flannel.linux-amd64.tar.zst
 
 # Verify checksum
 sha256sum -c sha256sum-amd64.txt --ignore-missing
