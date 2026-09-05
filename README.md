@@ -24,8 +24,8 @@ The next requirement is the cluster. This guide will use seven nodes so you will
   - Memory: 8GB (or what to appropriate for the intended work load)
   - Storage: 100GB (or what to appropriate for the intended work load)
 
-Note: Although this guide uses 7 machines, the minimum is 5 (1 registration, 3 masters and 1 agent). You can adjust the number of agent nodes as needed.  In order to adjust the size your cluster, just edit the `inventory.ini` file to increase/decrease resources in the `workers` section.
-Note: It is recommended to keep the root password the same across all cluster machines until after the RKE2 installation.  For production environments, choose a strong password for these machines.
+**Note:** Although this guide uses 7 machines, the minimum is 5 (1 gateway, 3 masters and 1 agent). You can adjust the number of agent nodes as needed.  In order to adjust the size your cluster, just edit the `inventory.ini` file to increase/decrease resources in the `workers` section.<br>
+**Note:** It is recommended to keep the root password the same across all cluster machines until after the RKE2 installation.  For production environments, choose a strong password for these machines.
 
 #### Example Topology:
 
@@ -39,15 +39,16 @@ To set up RKE2 using Ansible playbooks, follow these steps:
    
     With the IP addresses of the target cluster host in hand, update the inventory file.  Replace the IP addresses in the file with the IP addresses of your host. If needed, you may add more `workers` to the workers section.  However, in order to ensure high availability and robustness of the cluster, there must be 3 masters nodes.
 
-2. Create certificates for use by the RKE2 registration server:
+2. Create certificates for use by the hosted applications:
 
-    The RKE2 registration server is the way a user will interact with the cluster.  The external communication requires TLS certificates.  Existing certificates can be used, however if self signed certificates are required for testing/development reasons, use the following commands.
+    In addition to handling the API traffic, the RKE2 gateway server will handle interactions with hosted applications.  Secured web traffic will require TLS certificates.  Existing certificates can be used, however if self signed certificates are required for testing/development reasons, use the following commands.
 
     ```
     bash create-certs.sh
     ```
 
-    This command should produce two certificate files in the 'certs' folder.
+    This command should produce two certificate files in the 'certs' folder. If you already have certificates for your applications, replace the generated files with your certificate files... changing the names to match.<br><br>
+**Note:** The certificates can also be changed after the cluster is created by logging into the gateway server and editing the haproxy configuration file.
 
 3. Download RKE2 artifact for "air gapped" installations:
    
@@ -61,12 +62,12 @@ To set up RKE2 using Ansible playbooks, follow these steps:
 
 4. Prepare the cluster nodes for Ansible:
 
-    Ansible will need to execute commands against the cluster nodes.  We setup certificate-based logins using the host key of the controller host, therefore logins from the controller are password-less.  The key that Ansible will use is specified by the `ansible_ssh_private_key_file` property in the `inventory.ini` file.  If the specified key does not exist, it will be created.  The default value of `/root/.ssh/id_ed25519` is standard and works well, so there is usually no need to change it. 
+    Ansible will need to execute commands against the cluster nodes.  We setup certificate-based logins using the host key of the controller host, therefore logins from the controller are password-less.  The key that Ansible will use is specified by the `ansible_ssh_private_key_file` property in the `inventory.ini` file.  If the specified key does not exist, it will be created. 
 
     ```
     bash setup-nodes.sh -i inventory.ini -p <root password of the machines>
     ```
-
+    **Note:** The `ansible_ssh_private_key_file` property's default value of `/root/.ssh/id_ed25519` is standard and works well, so there is usually no need to change it.
 5. Run the playbook:
 
     ```
