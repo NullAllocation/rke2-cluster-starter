@@ -6,9 +6,9 @@ This guide will walk you through the process of setting up a RKE2 cluster with A
 
 Before you begin, you will need to have a machine to orchestrate this process. That machine will be referred to as the controller in the guide.  Once you have identified that machine, you'll need to have the following tools installed on it:
 
-- Ansible
-- Kubectl
-- This repository
+- ansible
+- kubectl
+- git (to clone this repository)
   
 The next requirement is the cluster. This guide will use seven nodes so you will need to obtain 7 machines for the cluster.  The specifications of those machines shall be as follows...
 - 1 machine for RKE2 gateway. This machine will load balance access across the multiple nodes.
@@ -33,7 +33,7 @@ The next requirement is the cluster. This guide will use seven nodes so you will
 
 ## Installation
 
-To set up an RKE2 cluster using Ansible playbooks, follow these steps:
+To set up a RKE2 cluster using Ansible playbooks, follow these steps:
 
 1. Edit the 'inventory.ini' file:
    
@@ -54,7 +54,7 @@ To set up an RKE2 cluster using Ansible playbooks, follow these steps:
     This command should produce two certificate files in the 'certs' folder. If you already have certificates for your applications, replace the generated files with your certificate files... changing the names to match.<br><br>
 **Note:** The certificates can also be changed after the cluster is created by logging into the gateway server and editing the haproxy configuration file.
 
-3. Download RKE2 artifact for "air gapped" installations:
+3. Download RKE2 artifacts for "air-gapped" installations:
    
     Some environments present challenges during installation due to internet restrictions.  Setting up a RKE2 cluster involves a lot of downloads and communication with internet servers. A solution for installing in internet restricted environments is to download the artifacts to the controller prior to installation, and then copy them to the internet restricted nodes. 
 
