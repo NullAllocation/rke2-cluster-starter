@@ -113,19 +113,9 @@ To verify the RKE2 cluster is functional, follow these steps:
       curl -s http://nginx.test-app.svc.cluster.local | head -n 5
     ```
 
-3. If nodes are `NotReady`, check kubelet logs and network interfaces.  For DNS issues, verify CoreDNS pods in the `kube-system` namespace. 
-
-    ```
-    # Check kubelet status on a specific node
-    sudo systemctl status rke2-agent
-
-    # Check CoreDNS logs
-    kubectl --kubeconfig ~/rke2.yaml logs -l k8s-app=kube-dns -n kube-system
-    ```
-
 ## Interesting readings
 
-[RKE2 Cluster setup part 1](https://arikanonline.medium.com/rke2-cluster-setup-part-1-haproxy-installation-on-rhel9-9885c8301a13)
-[RKE2 Cluster setup part 2](https://arikanonline.medium.com/rke2-cluster-setup-part-2-rancher-kubernetes-engine-installation-master-nodes-on-rhel9-fbfcb8dd4e5b)
-[RKE2 Cluster setup part 3](https://arikanonline.medium.com/rke2-cluster-setup-part-3-rancher-kubernetes-engine-installation-worker-nodes-on-rhel9-bed6d4eb2464)
+[RKE2 Cluster setup part 1](https://arikanonline.medium.com/rke2-cluster-setup-part-1-haproxy-installation-on-rhel9-9885c8301a13)<br>
+[RKE2 Cluster setup part 2](https://arikanonline.medium.com/rke2-cluster-setup-part-2-rancher-kubernetes-engine-installation-master-nodes-on-rhel9-fbfcb8dd4e5b)<br>
+[RKE2 Cluster setup part 3](https://arikanonline.medium.com/rke2-cluster-setup-part-3-rancher-kubernetes-engine-installation-worker-nodes-on-rhel9-bed6d4eb2464)<br>
 
