@@ -6,6 +6,7 @@ This guide will walk you through the process of setting up a RKE2 cluster with A
 
 Before you begin, you will need to have a machine to orchestrate this process. That machine will be referred to as the controller in the guide.  Once you have identified that machine, you'll need to have the following tools installed on it:
 
+- python3
 - ansible
 - kubectl
 - git (to clone this repository)
