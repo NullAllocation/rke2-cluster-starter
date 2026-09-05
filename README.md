@@ -8,6 +8,7 @@ Before you begin, you will need to have a machine to orchestrate this process. T
 
 - python3
 - python3-pip
+  - pip3 install netaddr
 - ansible
 - kubectl
 - git (to clone this repository)
