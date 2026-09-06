@@ -4,7 +4,7 @@ This guide will walk you through the process of setting up a RKE2 cluster with A
 
 ## Prerequisites
 
-This guide was developed with Rocky 9.  The installation option used was "minimum server install".  As these nodes are scoped to RKE2 functionally, there is no need to use the other installations that are intended for general purpose use.<br>
+This guide was developed with Rocky 9.  The installation option used was "minimum server install".  As these nodes are scoped to RKE2 functionally, there is no need to use the other installations that are intended for general purpose use and are bloated.<br><br>
 Before you begin, you will need a machine to orchestrate the cluster installation process.  That machine will be referred to as the controller in the guide.  Once you have identified that machine, you'll need to have the following tools installed on it:
 
 - python3 and python3-pip
