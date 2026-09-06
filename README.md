@@ -14,6 +14,7 @@ Before you begin, you will need to have a machine to orchestrate this process. T
   sudo dnf install -y epel-release
   sudo dnf install -y python3 python3-pip
   sudo dnf install -y ansible git
+  pip3 install netaddr
 
   cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
   [kubernetes]
