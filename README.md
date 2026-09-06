@@ -11,7 +11,7 @@ Before you begin, you will need to have a machine to orchestrate this process. T
 - kubectl
 - git (to clone this repository)
   ```
-  sudo dnf install -y epel-release
+  sudo dnf install -y epel-release createrepo
   sudo dnf install -y python3 python3-pip
   sudo dnf install -y ansible git
   pip3 install netaddr
