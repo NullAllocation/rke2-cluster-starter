@@ -28,15 +28,15 @@ Before you begin, you will need to have a machine to orchestrate this process. T
   ``` 
 The next requirement is the cluster. This guide will use seven nodes so you will need to obtain 7 machines for the cluster.  The specifications of those machines shall be as follows...
 - 1 machine for RKE2 gateway. This machine will load balance access across the multiple nodes.
-  - OS: Rocky Linux 9
+  - OS: Rocky Linux 9 (Minimum Install)
   - Memory: 2GB minimum
   - Storage: 10GB minimum
 - 3 machines for RKE2 control plane nodes
-  - OS: Rocky Linux 9
+  - OS: Rocky Linux 9 (Minimum Install)
   - Memory: 4GB minimum (8GB recommended)
   - Storage: 30GB minimum
 - 3 machines for agent workers.  The required resources for the agents will ultimately depend on the planned workload.
-  - OS: Rocky Linux 9
+  - OS: Rocky Linux 9 (Minimum Install)
   - Memory: 8GB (or what is appropriate for the intended workload)
   - Storage: 100GB (or what is appropriate for the intended workload)
 
