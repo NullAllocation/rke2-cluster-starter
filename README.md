@@ -40,7 +40,7 @@ The next requirement is the cluster. This guide will use seven nodes so you will
   - Memory: 8GB (or what is appropriate for the intended workload)
   - Storage: 100GB (or what is appropriate for the intended workload)
 
-**Note:** Although this guide uses 7 machines, the minimum is 5 (1 gateway, 3 masters and 1 agent). You can adjust the number of agent nodes as needed.  In order to adjust the size your cluster, just edit the `inventory.ini` file to increase/decrease resources in the `workers` section.<br>
+**Note:** Although this guide uses 7 machines, the minimum is 5 (1 gateway, 3 masters and 1 agent). You can adjust the number of agent nodes as needed.  In order to adjust the size of your cluster, just edit the `inventory.ini` file to add/remove resources in the `workers` section.<br>
 **Note:** It is recommended to keep the root password the same across all cluster machines until after the RKE2 installation.  For production environments, choose a strong password for these machines.
 
 #### Example Topology:
