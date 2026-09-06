@@ -12,7 +12,7 @@ Before you begin, you will need to have a machine to orchestrate this process. T
 - git (to clone this repository)
   ```
   sudo dnf install -y epel-release
-  sudo dnf install python3 python3-pip
+  sudo dnf install -y python3 python3-pip
   sudo dnf install -y ansible git
 
   cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
