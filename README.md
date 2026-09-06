@@ -13,7 +13,7 @@ Before you begin, you will need a machine to orchestrate the cluster installatio
 - kubectl
 - git (to clone this repository)
 
-Executing the following commands will install the needed tools...
+Executing the following commands will install the needed tools on the controller...
   ```
   sudo dnf install -y epel-release createrepo
   sudo dnf install -y python3 python3-pip
