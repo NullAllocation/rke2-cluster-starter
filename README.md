@@ -4,12 +4,16 @@ This guide will walk you through the process of setting up a RKE2 cluster with A
 
 ## Prerequisites
 
-Before you begin, you will need to have a machine to orchestrate this process. That machine will be referred to as the controller in the guide.  Once you have identified that machine, you'll need to have the following tools installed on it:
+This guide was developed with Rocky 9.  The installation option used was "minimum server install".  As these nodes are scoped to RKE2 functionally, there is no need to use the other installations that are intended for general purpose use.<br>
+Before you begin, you will need a machine to orchestrate the cluster installation process.  That machine will be referred to as the controller in the guide.  Once you have identified that machine, you'll need to have the following tools installed on it:
 
-- python3, python3-pip
+- python3 and python3-pip
+  - netaddr
 - ansible
 - kubectl
 - git (to clone this repository)
+
+Executing the following commands will install the needed tools...
   ```
   sudo dnf install -y epel-release createrepo
   sudo dnf install -y python3 python3-pip
@@ -28,20 +32,20 @@ Before you begin, you will need to have a machine to orchestrate this process. T
   ``` 
 The next requirement is the cluster. This guide will use seven nodes so you will need to obtain 7 machines for the cluster.  The specifications of those machines shall be as follows...
 - 1 machine for RKE2 gateway. This machine will load balance access across the multiple nodes.
-  - OS: Rocky Linux 9 (Minimum Install)
+  - OS: Rocky Linux 9
   - Memory: 2GB minimum
   - Storage: 10GB minimum
 - 3 machines for RKE2 control plane nodes
-  - OS: Rocky Linux 9 (Minimum Install)
+  - OS: Rocky Linux 9
   - Memory: 4GB minimum (8GB recommended)
   - Storage: 30GB minimum
 - 3 machines for agent workers.  The required resources for the agents will ultimately depend on the planned workload.
-  - OS: Rocky Linux 9 (Minimum Install)
+  - OS: Rocky Linux 9
   - Memory: 8GB (or what is appropriate for the intended workload)
   - Storage: 100GB (or what is appropriate for the intended workload)
 
-**Note:** Although this guide uses 7 machines, the minimum is 5 (1 gateway, 3 masters and 1 agent). You can adjust the number of agent nodes as needed.  In order to adjust the size of your cluster, just edit the `inventory.ini` file to add/remove resources in the `workers` section.<br>
-**Note:** It is recommended to keep the root password the same across all cluster machines until after the RKE2 installation.  For production environments, choose a strong password for these machines.
+**Note:**    Although this guide uses 7 machines, the minimum is 5 (1 gateway, 3 masters and 1 agent). You can adjust the number of agent nodes as needed.  In order to adjust the size of your cluster, just edit the `inventory.ini` file to add/remove resources in the `workers` section.<br>
+**Note:**    It is recommended to keep the root password the same across all cluster machines until after the RKE2 installation.  For production environments, choose a strong password for these machines.
 
 #### Example Topology:
 
