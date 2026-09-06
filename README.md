@@ -6,13 +6,25 @@ This guide will walk you through the process of setting up a RKE2 cluster with A
 
 Before you begin, you will need to have a machine to orchestrate this process. That machine will be referred to as the controller in the guide.  Once you have identified that machine, you'll need to have the following tools installed on it:
 
-- python3
-- python3-pip
-  - pip3 install netaddr
+- python3, python3-pip
 - ansible
 - kubectl
 - git (to clone this repository)
-  
+  ```
+  sudo dnf install -y epel-release
+  sudo dnf install python3 python3-pip
+  sudo dnf install -y ansible git
+
+  cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
+  [kubernetes]
+  name=Kubernetes
+  baseurl=https://pkgs.k8s.io/core:/stable:/v1.31/rpm/
+  enabled=1
+  gpgcheck=1
+  gpgkey=https://pkgs.k8s.io/core:/stable:/v1.31/rpm/repodata/repomd.xml.key
+  EOF
+  sudo dnf install -y kubectl --disableexcludes=kubernetes  
+  ``` 
 The next requirement is the cluster. This guide will use seven nodes so you will need to obtain 7 machines for the cluster.  The specifications of those machines shall be as follows...
 - 1 machine for RKE2 gateway. This machine will load balance access across the multiple nodes.
   - OS: Rocky Linux 9
