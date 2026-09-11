@@ -16,7 +16,7 @@ Executing the following commands will install the needed tools on the controller
   ```
   sudo dnf install -y epel-release createrepo
   sudo dnf install -y python3 python3-pip
-  sudo dnf install -y ansible git
+  sudo dnf install -y ansible git sshpass
   pip3 install netaddr
 
   cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
