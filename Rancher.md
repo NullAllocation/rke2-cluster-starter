@@ -54,4 +54,10 @@ To set up Rancher using Docker Compose, follow these steps:
     docker compose up -d
     ```
 
+4. khkkhk
+   
+    ```
+    sudo docker logs <container_id_or_name> 2>&1 | grep "Bootstrap password:"   
+    ```
+
     This command will start the Rancher application using the docker-compose.yml file. It will take a few minutes to complete the start up as the images are being downloaded.
