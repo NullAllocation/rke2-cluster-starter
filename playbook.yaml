@@ -92,7 +92,7 @@
 
 
 - name: Load Balancer
-  hosts: apis
+  hosts: gateways
   become: true
   tasks:
     - name: Install HAProxy on Ubuntu

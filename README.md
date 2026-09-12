@@ -1,23 +1,23 @@
 # Setting up a RKE2 cluster with high availability
 
-This guide will walk you through the process of setting up a RKE2 cluster with Ansible, in high availability mode. RKE2 is Rancher's enterprise-ready next-generation Kubernetes distribution.  <br>These instructions were developed with Rocky 9 using the "minimum server" installation option.  As these cluster's nodes are scoped to RKE2 functionally, there is no need to use the other installation options that are intended for general purpose use and are bloated.
+This guide will walk you through the process of setting up a RKE2 cluster with Ansible, in high availability mode. RKE2 is Rancher's enterprise-ready next-generation Kubernetes distribution.  <br>These instructions were developed with Rocky 9.8 using the "Minimal Install" installation option.  As these cluster's nodes are scoped to RKE2 functionally, there is no need to use the other installation options that are intended for general purpose use and are bloated.
 
 ## Prerequisites
 
-Before you begin, you will need a machine to orchestrate the cluster installation process.  That machine will be referred to as the controller in the guide.  Once you have identified that machine, you'll need to have the following tools installed on it:
+Before you begin, you will need a machine to orchestrate the cluster installation process.  That machine will be referred to as the controller in the guide.  Once you have identified that machine, you'll need to have the following tools installed on it.  The versions tested in this guide are in parenthesis.
 
-- python3 and python3-pip
+- python3 (3.9.25) and python3-pip (21.3.1)
   - netaddr
-- ansible
-- kubectl
-- git (to clone this repository)
+- ansible (2.14.18)
+- kubectl (1.31.14)
+- git (2.52.0)
 
 Executing the following commands will install the needed tools on the controller...
   ```
   sudo dnf install -y epel-release createrepo
   sudo dnf install -y python3 python3-pip
   sudo dnf install -y ansible git sshpass
-  pip3 install netaddr
+  sudo pip3 install netaddr
 
   cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
   [kubernetes]
@@ -31,15 +31,15 @@ Executing the following commands will install the needed tools on the controller
   ``` 
 <br>The next requirement is the cluster. This guide will use seven nodes so you will need to obtain 7 machines for the cluster.  The specifications of those machines shall be as follows...
 - 1 machine for RKE2 gateway. This machine will load balance access across the multiple nodes.
-  - OS: Rocky Linux 9
+  - OS: Rocky Linux 9.8
   - Memory: 2GB minimum
   - Storage: 10GB minimum
 - 3 machines for RKE2 control plane nodes
-  - OS: Rocky Linux 9
+  - OS: Rocky Linux 9.8
   - Memory: 4GB minimum (8GB recommended)
   - Storage: 30GB minimum
 - 3 machines for agent workers.  The required resources for the agents will ultimately depend on the planned workload.
-  - OS: Rocky Linux 9
+  - OS: Rocky Linux 9.8
   - Memory: 8GB (or what is appropriate for the intended workload)
   - Storage: 100GB (or what is appropriate for the intended workload)
 
