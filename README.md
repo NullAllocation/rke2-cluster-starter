@@ -88,7 +88,7 @@ To set up a RKE2 cluster using Ansible playbooks, follow these steps:
     Ansible will need to execute commands against the cluster nodes.  We setup certificate-based logins using the host key of the controller host, therefore logins from the controller are password-less.  The key that Ansible will use is specified by the `ansible_ssh_private_key_file` property in the `inventory.ini` file.  If the specified key does not exist, it will be created. 
 
     ```
-    bash setup-nodes.sh -i inventory.ini -p <root password of the machines>
+    bash setup-nodes.sh -i inventory.ini -p <root password of the machines> -n <gateway's hostname from inventory file>
     ```
     **Note:** The `ansible_ssh_private_key_file` property's default value of `/root/.ssh/id_ed25519` is standard and works well, so there is usually no need to change it.
 5. Run the playbook:
