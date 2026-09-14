@@ -26,7 +26,7 @@ To set up Rancher using Docker Compose, follow these steps:
 1. Open ports to allow access to the services.
 
     ```
-    sudo firewall-cmd --permanent --add-port=80/tcp --add-port=8443/tcp
+    sudo firewall-cmd --permanent --add-port=80/tcp --add-port=443/tcp
     sudo firewall-cmd --reload
     ```
 
@@ -55,11 +55,12 @@ To set up Rancher using Docker Compose, follow these steps:
     ```
     docker compose up -d
     ```
+    This command will start the Rancher application using the docker-compose.yml file. It will take a few minutes to complete the start up as the images are being downloaded.
 
-4. khkkhk
+4. Upon visiting the Rancher UI for the first time, you must enter the bootstrap password automatically assigned during installation.  To reveal this password you must search the logs for the keyword "Bootstrap Password".
    
     ```
     sudo docker logs rancher-server 2>&1 | grep "Bootstrap Password:"   
     ```
-
-    This command will start the Rancher application using the docker-compose.yml file. It will take a few minutes to complete the start up as the images are being downloaded.
+    
+    Enter the initial bootstrap password and choose a new password to secure the application.
