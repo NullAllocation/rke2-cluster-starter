@@ -39,8 +39,8 @@ To set up Rancher using Docker Compose, follow these steps:
         restart: unless-stopped
         privileged: true
         environment:
-          - HTTP_PROXY=http://ip:port
-          - HTTPS_PROXY=http://ip:port
+          - HTTP_PROXY=http://<ip:port>
+          - HTTPS_PROXY=http://<ip:port>
           - NO_PROXY=localhost,127.0.0.1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,.svc,.local
         ports:
           - "80:80"
@@ -70,23 +70,23 @@ You should now have a working instance of Rancher.
 ## Troubleshooting Proxy Issues
 If your controller or RKE2 nodes are behind a proxy, it is recommended that you set the system-wide proxy configurations.  Create a file '/etc/profile.d/proxy.sh' and insert the following contents.
 ```
-export http_proxy="http://ip:port"
-export https_proxy="http://ip:port"
-export ftp_proxy="http://ip:port"
+export http_proxy="http://<ip:port>"
+export https_proxy="http://<ip:port>"
+export ftp_proxy="http://<ip:port>"
 export no_proxy="localhost,127.0.0.1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,.local,.svc"
 
-export HTTP_PROXY="http://ip:port"
-export HTTPS_PROXY="http://ip:port"
-export FTP_PROXY="http://ip:port"
+export HTTP_PROXY="http://<ip:port>"
+export HTTPS_PROXY="http://<ip:port>"
+export FTP_PROXY="http://<ip:port>"
 export NO_PROXY="localhost,127.0.0.1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,.local,.svc"
 ```
 You should also set the proxy configuration specifically for docker too. Create a file '/etc/systemd/system/docker.service.d/http-proxy.conf' and insert the following contents.
 ```
 [Service]
-Environment="HTTP_PROXY=http://ip:port"
-Environment="HTTPS_PROXY=http://ip:port"
+Environment="HTTP_PROXY=http://<ip:port>"
+Environment="HTTPS_PROXY=http://<ip:port>"
 Environment="NO_PROXY=localhost,127.0.0.1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,.svc,.local"
-Environment="http_proxy=http://ip:port"
-Environment="https_proxy=http://ip:port"
+Environment="http_proxy=http://<ip:port>"
+Environment="https_proxy=http://<ip:port>"
 Environment="no_proxy=localhost,127.0.0.1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,.svc,.local"
 ```
