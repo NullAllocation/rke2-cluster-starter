@@ -65,6 +65,5 @@ To set up Rancher using Docker Compose, follow these steps:
    
     ```
     sudo docker logs rancher-server 2>&1 | grep "Bootstrap Password:"   
-    ```
-    
+    ```    
     Enter the initial bootstrap password and choose a new password to secure the application.
