@@ -40,8 +40,8 @@ To set up Rancher using Docker Compose, follow these steps:
         restart: unless-stopped
         privileged: true
         environment:
-          - HTTP_PROXY=http://157.127.239.146:80
-          - HTTPS_PROXY=http://157.127.239.146:80
+          - HTTP_PROXY=http://ip:port
+          - HTTPS_PROXY=http://ip:port
           - NO_PROXY=localhost,127.0.0.1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,.svc,.local
         ports:
           - "80:80"
