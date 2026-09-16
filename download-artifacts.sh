@@ -26,7 +26,7 @@ curl -LO https://github.com/rancher/rke2/releases/download/${RKE2_VERSION}/rke2-
 sha256sum -c sha256sum-amd64.txt --ignore-missing
 
 # Download rpms
-dnf download --resolve --alldeps --downloaddir local-repo haproxy tar
+dnf download --resolve --alldeps --downloaddir local-repo haproxy tar wget iproute
 # Create local repo file
 createrepo local-repo/
 cat <<EOF | tee local-repo.repo
