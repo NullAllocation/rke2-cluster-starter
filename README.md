@@ -4,7 +4,7 @@ This guide will walk you through the process of setting up a RKE2 cluster with A
 
 ## Prerequisites
 
-Before you begin, you will need a machine to orchestrate the cluster installation process.  That machine will be referred to as the controller in the guide.  Once you have identified that machine, you'll need to have the following tools installed on it.  The versions tested in this guide are in parenthesis.
+Before you begin, you will need a machine to orchestrate the cluster installation process.  That machine will be referred to as the orchestrator in the guide.  Once you have identified that machine, you'll need to have the following tools installed on it.  The versions tested in this guide are in parenthesis.
 
 - python3 (3.9.25) and python3-pip (21.3.1)
   - netaddr
@@ -12,7 +12,7 @@ Before you begin, you will need a machine to orchestrate the cluster installatio
 - kubectl (1.31.14)
 - git (2.52.0)
 
-Executing the following commands will install the needed tools on the controller...
+Executing the following commands will install the needed tools on the orchestrator machine...
   ```
   sudo dnf install -y epel-release createrepo
   sudo dnf install -y python3 python3-pip
@@ -52,7 +52,7 @@ Executing the following commands will install the needed tools on the controller
 
 ## Installation
 
-To set up a RKE2 cluster using Ansible playbooks, follow these steps:
+To set up a RKE2 cluster using Ansible playbooks, clone this repository on to the orchestrator machine and follow these steps:
 
 1. Edit the 'inventory.ini' file:
    
@@ -85,7 +85,7 @@ To set up a RKE2 cluster using Ansible playbooks, follow these steps:
 
 4. Prepare the cluster nodes for Ansible:
 
-    Ansible will need to execute commands against the cluster nodes.  We setup certificate-based logins using the host key of the controller host, therefore logins from the controller are password-less.  The key that Ansible will use is specified by the `ansible_ssh_private_key_file` property in the `inventory.ini` file.  If the specified key does not exist, it will be created. 
+    Ansible will need to execute commands against the cluster nodes.  We setup certificate-based logins using the host key of the orchestrator host, therefore logins from the orchestrator host are password-less.  The key that Ansible will use is specified by the `ansible_ssh_private_key_file` property in the `inventory.ini` file.  If the specified key does not exist, it will be created. 
 
     ```
     bash setup-nodes.sh -i inventory.ini -p <root password of the machines> -n <gateway's hostname from inventory file>
